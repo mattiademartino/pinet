@@ -1,0 +1,69 @@
+# Hyperparameters of the RL baselines on the QP contextual bandit.
+# The projection / environment is configured separately, by the same file used
+# for the pinet baseline (e.g. benchmark_small_autotune.yaml), so that the
+# forward projection is identical across all arms.
+
+# --- shared ---
+features_list: [200, 200]
+activation: relu
+learning_rate: 3.0e-4
+max_grad_norm: 0.5
+context_batch: 2048
+total_env_samples: 4000000
+log_every: 10
+eval_every: 50
+state_dependent_std: False
+log_std_init: -1.6
+log_std_min: -5.0
+log_std_max: 2.0
+normalize_advantage: True
+grad_noise_probe: True
+
+# --- REINFORCE ---
+reinforce:
+  ent_coef: 0.0
+  value_coef: 0.5
+
+# --- PPO ---
+ppo:
+  n_epochs: 10
+  minibatch_size: 256
+  clip_eps: 0.2
+  ent_coef: 0.0
+  value_coef: 0.5
+  target_kl: 0.05
+
+# --- pinet arms (not RL: they differentiate through the projection) ---
+# The learning rate is the one of the pinet baseline, not the RL default.
+pinet:
+  learning_rate: 1.0e-2
+
+pinet_stochastic:
+  learning_rate: 1.0e-2
+  state_dependent_std: True
+  # No entropy bonus: nothing prevents the sampling scale from shrinking.
+  ent_coef: 0.0
+
+# --- SAC ---
+sac: &sac
+  state_dependent_std: True
+  critic_learning_rate: 3.0e-4
+  alpha_learning_rate: 3.0e-4
+  init_alpha: 0.2
+  target_entropy_scale: 1.0
+  buffer_capacity: 200000
+  batch_size: 256
+  updates_per_iteration: 8
+  warmup_iterations: 5
+  warmup_std: 1.0
+  # The critic is a function of the raw action, so it has to learn the plateaus
+  # the projection creates.
+  critic_on_projection: False
+
+# --- SAC restricted to the feasible set ---
+# Identical to sac except that the critic is trained and queried only on
+# projected actions. The actor consequently reaches it through the projection,
+# so this arm differentiates the projection (it uses J_P, not grad L).
+sac_proj:
+  <<: *sac
+  critic_on_projection: True
