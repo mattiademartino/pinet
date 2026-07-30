@@ -1,0 +1,8 @@
+use_DC3_dataset: True
+use_convex: True
+problem_seed: 42
+problem_var: 10
+problem_nineq: 5
+problem_neq: 5
+problem_examples: 2000
+dataset_name: "dc3_random_simple_dataset_var10_ineq5_eq5_ex2000"
